@@ -2,6 +2,7 @@ from posts.models import Post, Group
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from http import HTTPStatus
 
 User = get_user_model()
 
@@ -29,11 +30,11 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
-        # Подсчитаем количество записей в Task
         posts_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый текст',
-            'group': PostCreateFormTests.group.id
+            'group': PostCreateFormTests.group.id,
+            'user': PostCreateFormTests.user.id,
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
@@ -50,6 +51,33 @@ class PostCreateFormTests(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 id=self.post.id,
-                text='Тестовый текст'
+                text=form_data['text']
             ).exists()
         )
+        new_post = Post.objects.last()
+        self.assertEqual(new_post.group.id, form_data['group'])
+        self.assertEqual(new_post.author.id, form_data['user'])
+
+    def test_edit_post(self):
+        """Тест редактирования поста"""
+        form_data = {
+            'text': 'Тестовый текст',
+            'group': PostCreateFormTests.group.id
+        }
+        response = self.authorized_client.post(
+            reverse(
+                'posts:post_edit',
+                args=[self.post.id]),
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', args=(self.post.id,))
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.post.refresh_from_db()
+        post = Post.objects.latest('id')
+        self.assertEqual(post.text, form_data['text'])
+        self.assertEqual(post.author, self.user)
+        self.assertEqual(post.group_id, form_data['group'])

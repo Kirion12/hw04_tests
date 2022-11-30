@@ -21,12 +21,28 @@ class PostModelTest(TestCase):
             text='Тестовый пост',
         )
 
-        def test_models_len_post(self):
+        def test_model_post_have_correct_object_name(self):
+            """У модели Post корректно работает __str__."""
             post = PostModelTest.post
             expected_object_name = post.text
             self.assertEqual(expected_object_name, str(post))
 
-        def test_models_have_correct_object_names(self):
-            group = PostModelTest.group
-            expected_object_name = group.title
-            self.assertEqual(expected_object_name, str(group))
+        def test_model_post_have_correct_object_name(self):
+            """У модели Post корректно работает __str__."""
+            post = PostModelTest.post
+            expected_object_name = post.text
+            self.assertEqual(expected_object_name, str(post))
+
+        def test_post_have_correct_verbose_name(self):
+            """У модели Post поля verbose_name совпадают с ожидаемыми"""
+            post = PostModelTest.post
+            field_verbose_name = {
+                'text': 'Тестовый пост',
+                'group': 'Тестовая группа',
+                'pub_date': 'Дата публикации',
+                'author': 'Автор',
+            }
+            for field, expected in field_verbose_name.items():
+                with self.subTest(field=field):
+                    self.assertEqual(
+                        post._meta.get_field(field).verbose_name, expected)
