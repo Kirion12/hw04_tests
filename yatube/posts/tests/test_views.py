@@ -36,23 +36,19 @@ class PostsPagesTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         # Собираем в словарь пары "имя_html_шаблона: reverse(name)"
         templates_pages_names = {
-            'posts/index.html': reverse('posts:index'),
-            'posts/group_list.html': reverse(
-                'posts:group_posts', kwargs={'slug': 'test-slug'}
-            ),
-            'posts/profile.html': reverse(
-                'posts:profile', kwargs={'username': self.user.username}
-            ),
-            'posts/post_detail.html': reverse(
-                'posts:post_detail', kwargs={'post_id': self.post.pk}
-            ),
-            'posts/create_post.html': reverse(
-                'posts:post_edit', kwargs={'post_id': self.post.pk}
-            ),
-            'posts/create_post.html': reverse('posts:post_create'),
+            reverse('posts:index'): 'posts/index.html',
+            reverse('posts:group_posts', kwargs={'slug': 'test-slug'}):
+            'posts/group_list.html',
+            reverse('posts:profile', kwargs={'username': self.user.username}):
+            'posts/profile.html',
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
+            'posts/post_detail.html',
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}):
+            'posts/create_post.html',
+            reverse('posts:post_create'): 'posts/create_post.html',
         }
         # Проверяем, что при обращении к name вызывается соотв HTML-шаблон
-        for template, reverse_name in templates_pages_names.items():
+        for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
